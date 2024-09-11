@@ -87,9 +87,7 @@ async function collectAllLinks(page) {
         console.log(`Failed to load ${nextLink}: ${error.message}`);
       }
     }
-
-    console.log([...visitedLinks][0])
-
+    
     await browser.close();
   })();
 
