@@ -36,6 +36,16 @@ services:
       - elasticsearch
       - kibana
 
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
 volumes:
   esdata:
+    driver: local
+  mongo-data:
     driver: local
