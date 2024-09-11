@@ -1,5 +1,18 @@
 import puppeteer from "puppeteer";
 
+async function extractPageInfo(page) {
+  return page.evaluate(() => {
+    const h1 = document.querySelector('h1') ? document.querySelector('h1').innerText : null;
+    const h2 = document.querySelector('h2') ? document.querySelector('h2').innerText : null;
+    return {
+      url: window.location.href,
+      h1: h1 ? h1 : h2,
+      html: document.querySelector('body').outerHTML.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').replace('\n','').replace(/&\s*nbsp;/, '').replace(/&\s*copy;/, '').replace(/\$\s*=\s*jQuery;\s*.*$/,'').replace(/[^a-zA-Z0-9À-ÿ\s]/,'').trim(), 
+      keywords: document.querySelector('meta[name="keywords"]') ? document.querySelector('meta[name="keywords"]').getAttribute('content') : null,
+    };
+  });
+}
+
 async function collectAllLinks(page) {
     return await page.evaluate(() => {
         const anchors = Array.from(document.querySelectorAll('a'));
@@ -14,25 +27,8 @@ async function collectAllLinks(page) {
                 return false;
               }
             }
-          });
+          })
       });
-}
-
-async function getPageInfo(page) {
-    const h1 = await page.$eval('.title', h1 => h1.innerHTML);
-    const html = await page.content();
-    const keywords = await page.evaluate(()=> {
-      const metaKeywords = document.querySelector('meta[name="keywords"]');
-      return metaKeywords ? metaKeywords.getAttribute('content') : null;
-    });
-    
-    return {
-      url,
-      title: h1,
-      html: html.replace('/<[^>]*>/g',''),
-      keywords: keywords,
-    }
-  
 }
 
 (async () => {
@@ -44,6 +40,9 @@ async function getPageInfo(page) {
     
     await page.goto('https://federation.ffvl.fr', { waitUntil: 'load' });
   
+    const initialInfo = await extractPageInfo(page);
+    visitedLinks.add(initialInfo);
+
     let newLinks = await collectAllLinks(page);
     newLinks.forEach(link => linksToVisit.add(link));
 
@@ -53,13 +52,14 @@ async function getPageInfo(page) {
   
       if (visitedLinks.has(nextLink)) continue;
       
-      visitedLinks.add(nextLink);
-      
       try {
         await page.goto(nextLink, { waitUntil: 'load', timeout: 30000 });
-  
+
         newLinks = await collectAllLinks(page);
-        
+
+        const pageInfo = await extractPageInfo(page);
+        visitedLinks.add(pageInfo);
+
         newLinks.forEach(link => {
           if (!visitedLinks.has(link) && !linksToVisit.has(link)) {
             linksToVisit.add(link);
@@ -69,13 +69,7 @@ async function getPageInfo(page) {
         console.log(`Failed to load ${nextLink}: ${error.message}`);
       }
     }
-  
 
-    console.log([...visitedLinks]);
-    console.log([...visitedLinks].length)
-
-    
-  
     await browser.close();
   })();
 
