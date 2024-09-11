@@ -23,6 +23,19 @@ services:
     depends_on:
       - elasticsearch
 
+  npm:
+    image: node:14
+    container_name: npm
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: bash -c "npm install && npm run start"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - elasticsearch
+      - kibana
+
 volumes:
   esdata:
     driver: local
