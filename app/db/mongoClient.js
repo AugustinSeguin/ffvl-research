@@ -23,11 +23,11 @@ async function connect() {
     return { client, db };
 }
 
-async function insert(collectionName, url, html, h1, keywords) {
+async function insert(collectionName, url, html, h1, keywords, mostUsedWords) {
     const { client, db } = await connect();
     try {
         const collection = db.collection(collectionName);
-        const result = await collection.insertOne({ url: url, html: html, h1: h1, keywords: keywords });
+        const result = await collection.insertOne({ url: url, html: html, h1: h1, keywords: keywords, mostUsedWords: mostUsedWords, category: setCategory(url) });
         console.log('Inserted documents =>', result);
     } finally {
         await client.close();
@@ -44,6 +44,13 @@ async function findAll(collectionName, query = {}) {
     } finally {
         await client.close();
     }
+}
+
+function setCategory(url) {
+    const categories = [ "federation", "delta", "parapente", "cv", "kite", "boomerang" ];
+
+    return categories.find((category) => url.includes(category));
+
 }
 
 module.exports = { insert, findAll };
