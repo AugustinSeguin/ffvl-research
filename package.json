@@ -1,0 +1,12 @@
+{
+  "name": "resarch",
+  "version": "1.0.0",
+  "description": "resarch for ffvl",
+  "main": "./app/elasticsearch.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./app/elasticsearch.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
