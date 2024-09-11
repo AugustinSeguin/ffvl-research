@@ -14,7 +14,9 @@ Lancer la commande pour créer les containers :
 - url
 - html
 - keywords 
-- les mots les plus présent sur la page web
+- les 3 mots les plus présent sur la page web
+- Si l'url correspond à un document
+- Le nom du document si s'en ai un
 
 > le dossier app/ créé une BDD MongoDB avec une collection reprenant les données renvoyés par puppeteer
 
