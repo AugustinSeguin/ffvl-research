@@ -1,12 +1,13 @@
 import puppeteer from "puppeteer";
 import { stopwords } from "./stopwords.js";
+import { documentExtensions } from "./extensions.js";
 
 async function extractPageInfo(page) {
-  return page.evaluate((stopwords) => {
+  return page.evaluate((stopwords,documentExtensions) => {
     function getMostUsedWords(content){
       const wordsArray = content.toLowerCase().split(' ');
       const wordCount = {};
-      const usefullWordsArray = wordsArray.filter((word)=>{
+      wordsArray.filter((word)=>{
         if(word.length > 2 && !stopwords.includes(word)){
           wordCount[word] = (wordCount[word] || 0) + 1;
           return true;
@@ -20,15 +21,17 @@ async function extractPageInfo(page) {
     const h1 = document.querySelector('h1') ? document.querySelector('h1').innerText : null;
     const h2 = document.querySelector('h2') ? document.querySelector('h2').innerText : null;
     const content = document.querySelector('body').outerHTML.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').replace('\n','').replace(/&\s*nbsp;/g, '').replace(/&\s*copy;/g, '').replace(/\$\s*=\s*jQuery;\s*.*$/g,'').replace(/[^a-zA-Z0-9À-ÿ\s]/g,'').trim()
-
+    const url = window.location.href
     return {
-      url: window.location.href,
+      url,
       h1: h1 ? h1 : h2,
-      html: content, 
+      html: content !== '' ? content : null, 
       keywords: document.querySelector('meta[name="keywords"]') ? document.querySelector('meta[name="keywords"]').getAttribute('content') : null,
-      most_used_words: getMostUsedWords(content),
+      most_used_words: getMostUsedWords(content).length>0 ? getMostUsedWords(content) : null,
+      isDocument: documentExtensions.some(extension => url.slice(-4).includes(extension)),
+      DocumentTitle: documentExtensions.some(extension => url.slice(-4).includes(extension)) ? url.match(/[^\/]+$/g,'')[0] : null,
     };
-  }, stopwords);
+  }, stopwords, documentExtensions);
 }
 
 async function collectAllLinks(page) {
