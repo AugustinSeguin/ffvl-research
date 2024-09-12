@@ -1,25 +1,24 @@
-const { insert, findAll, findAllByHtml, findAllByTitle } = require('./db/mongoClient');
-const { main } = require('../puppeteer/ffvl-scraping-recursive');
-
+import { getAllData } from '../puppeteer/ffvl-scraping-recursive.js';
 
 const json = '{"url": "https://federation.ffvl.fr", "html": "je fais du parapente et meme pas peur", "h1": "test", "keywords": ["dbgkhju", "blblblbl"], "mostUsedWords": ["test", "jghsngtr"]}';
 
-const obj = JSON.parse(json);
+const res = await getAllData()
+const resArray = [...res];
 
-insert("websitesContent", obj.url, obj.html, obj.h1, obj.keywords, obj.mostUsedWords);
+resArray.forEach(element => {
+    const obj = JSON.parse(json);
+    try{
+        insert("websitesContent", obj.url, obj.html, obj.h1, obj.keywords, obj.mostUsedWords);
+    } catch(e){
+        console.log('Could not insert: '+ e)
+    }
+});
+
+const obj = JSON.parse(json);
 
 // const result = findAll("websitesContent");
 
-// const result = findAllByHtml("websitesContent", "parapente");
+//const result = findAllByHtml("websitesContent", "parapente");
 
-// console.log(result);
-
-let res = main();
-console.log(res);
-
-
-res.forEach(r => {
-    insert("websitesContent", r.url, r.html, r.h1, r.keywords, r.mostUsedWords);
-    console.log(r);
-});
+//console.log(result);
 
