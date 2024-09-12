@@ -1,7 +1,12 @@
 import { getAllData } from '../puppeteer/ffvl-scraping-recursive.js';
-import { insert, findAll  } from './db/mongoClient.js';
+import { insert, findAll, findAllHtml } from './db/mongoClient.js';
 
-const json = '{"url": "https://federation.ffvl.fr", "html": "je fais du parapente et meme pas peur", "h1": "za aa", "keywords": ["dbgkhju", "blblblbl"], "mostUsedWords": ["test", "jghsngtr"]}';
+const express = require('express')
+const app = express()
+
+// respond with "hello world" when a GET request is made to the homepage
+
+// const json = '{"url": "https://federation.ffvl.fr", "html": "je fais du parapente et meme pas peur", "h1": "za aa", "keywords": ["dbgkhju", "blblblbl"], "mostUsedWords": ["test", "jghsngtr"]}';
 
 // const res = await getAllData();
 // const resArray = [...res];
@@ -24,11 +29,27 @@ const json = '{"url": "https://federation.ffvl.fr", "html": "je fais du parapent
 
 
 // const obj = JSON.parse(json);
-// insert("websitesContent", obj.url, obj.html, obj.h1, obj.keywords, obj.mostUsedWords);
+// insert(obj.url, obj.html, obj.h1, obj.keywords, obj.mostUsedWords);
 
-const result = findAll("dbg");
-const resArray = [...result];
-const excludeIds = resArray.map(doc => doc._id);
+async function prioriotaryResults(param, category) {
+    return await findAll(param, category);
+}
 
-const htmlResult = findAllHtml("parapente", { $excludeIds: excludeIds});
+async function secondaryResults(results, param, category) {
+    if (needMoreResults) {
+        const excludeIds = results.map(doc => doc._id);
+        const htmlResult = await findAllHtml(param, category, excludeIds)
+    }
+}
 
+
+app.get('/search', (req, res) => {
+    let param = req.params['keyword'];
+    let category = req.params['category'];
+
+    let results = prioriotaryResults(param, category);
+    if (req.params['needMoreResulst']) {
+       results = secondaryResults(results, param, category);
+    }
+    res.send(results);
+})
