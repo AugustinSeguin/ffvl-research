@@ -25,7 +25,7 @@ const websiteContentSchema = new mongoose.Schema({
 const WebsiteContent = mongoose.model('WebsiteContent', websiteContentSchema);
 
 // Function to insert a document
-async function insert(collectionName, url, html, h1, keywords, mostUsedWords) {
+async function insert(url, html, h1, keywords, mostUsedWords) {
     try {
         const websiteContent = new WebsiteContent({
             url: url,

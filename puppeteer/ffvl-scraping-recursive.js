@@ -52,8 +52,12 @@ async function collectAllLinks(page) {
   });
 }
 
-async function main() {
-  const browser = await puppeteer.launch();
+export async function main() {
+  const browser = await puppeteer.launch({
+    executablePath: '/usr/bin/google-chrome-stable', // Specify the path to your Chrome binary
+    headless: true, // Set to false if you want to see the browser UI
+    args: ['--no-sandbox', '--disable-setuid-sandbox'], // Add these flags
+  });
   const page = await browser.newPage();
 
   const visitedLinks = new Set();
@@ -95,5 +99,4 @@ async function main() {
   return Array.from(visitedLinks);
 }
 
-module.exports = main;
 
