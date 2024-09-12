@@ -5,6 +5,7 @@ const json = '{"url": "https://federation.ffvl.fr", "html": "je fais du parapent
 const res = await getAllData()
 const resArray = [...res];
 
+
 resArray.forEach(element => {
     const obj = JSON.parse(json);
     try{
@@ -18,7 +19,8 @@ const obj = JSON.parse(json);
 
 // const result = findAll("websitesContent");
 
-//const result = findAllByHtml("websitesContent", "parapente");
-
-//console.log(result);
+res.forEach(r => {
+    insert(r.url, r.html, r.h1, r.keywords, r.mostUsedWords);
+    console.log(r);
+});
 
