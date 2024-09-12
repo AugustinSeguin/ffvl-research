@@ -2,25 +2,36 @@ version: '3.8'
 
 services:
   npm:
-    image: node:14
     container_name: npm
+    image: node:22
+    tty: true
     working_dir: /app
     volumes:
       - .:/app
-    command: bash -c "npm install && npm run start"
+      - npm-data:/app/node_modules
     ports:
       - "3000:3000"
-
+    networks:
+      - ffvl-network
+  
   mongodb:
     image: mongo:latest
     container_name: mongodb
     ports:
       - "27017:27017"
+    expose:
+     - "27017"
     volumes:
       - mongo-data:/data/db
+    networks:
+      - ffvl-network
 
 volumes:
-  esdata:
+  npm-data:
     driver: local
   mongo-data:
     driver: local
+
+networks:
+  ffvl-network:
+    driver: bridge

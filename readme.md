@@ -4,8 +4,26 @@ Voici un POC de la fonctionnalité recherche sur tous les sites de la FFVL.
 
 ## L'outil est dockerisé.
 
-Lancer la commande pour créer les containers :
+- Lancer la commande pour créer les containers :
 `docker-compose up -d`
+
+- Entrer dans le container npm
+`docker exec -it npm bash`
+
+- Installer les dépendances
+`npm i`
+
+- Exécuter le programme
+`npm run start`
+
+### Container npm
+
+Environnement NodeJs 
+
+### Container mongodb
+
+Environnement MongoDb. 
+BDD noSQL car traitement de beaucoup de données avec une seule table (= collection).
 
 ## Arborescence
 
@@ -19,7 +37,3 @@ Lancer la commande pour créer les containers :
 - Le nom du document si s'en ai un
 
 > le dossier app/ créé une BDD MongoDB avec une collection reprenant les données renvoyés par puppeteer
-
-## TODO
-A compléter en fonction de l'évolution du projet avant le rendu du livrable.
-
