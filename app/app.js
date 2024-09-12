@@ -1,35 +1,20 @@
 import { getAllData } from '../puppeteer/ffvl-scraping-recursive.js';
 import { insert, findAll, findAllHtml } from './db/mongoClient.js';
+import express from "express";
 
-const express = require('express')
 const app = express()
 
-// respond with "hello world" when a GET request is made to the homepage
+const res = await getAllData();
+const resArray = [...res];
 
-// const json = '{"url": "https://federation.ffvl.fr", "html": "je fais du parapente et meme pas peur", "h1": "za aa", "keywords": ["dbgkhju", "blblblbl"], "mostUsedWords": ["test", "jghsngtr"]}';
-
-// const res = await getAllData();
-// const resArray = [...res];
-
-// resArray.forEach(element => {
-//     const obj = JSON.parse(json);
-//     try{
-//         insert("websitesContent", obj.url, obj.html, obj.h1, obj.keywords, obj.mostUsedWords);
-//     } catch(e){
-//         console.log('Could not insert: '+ e)
-//     }
-// });
-
-// // const result = findAll("websitesContent");
-
-// res.forEach(r => {
-//     insert(r.url, r.html, r.h1, r.keywords, r.mostUsedWords);
-//     console.log(r);
-// });
-
-
-// const obj = JSON.parse(json);
-// insert(obj.url, obj.html, obj.h1, obj.keywords, obj.mostUsedWords);
+resArray.forEach(element => {
+    const obj = JSON.parse(JSON.stringify(element));
+    try{
+        insert(obj.url, obj.html, obj.h1, obj.keywords, obj.mostUsedWords);
+    } catch(e){
+        console.log('Could not insert: '+ e)
+    }
+});
 
 async function prioriotaryResults(param, category) {
     return await findAll(param, category);
@@ -53,3 +38,6 @@ app.get('/search', (req, res) => {
     }
     res.send(results);
 })
+
+const port = 3000;
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));

@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Connection URL
-const url = 'mongodb://mongodb:27017/ffvlDb';
+const url = 'mongodb://localhost:27017/ffvlDb';
 
 // Database Name
 const dbName = 'ffvlDb';
@@ -27,7 +27,7 @@ const websiteContentSchema = new mongoose.Schema({
 const WebsiteContent = mongoose.model('WebsiteContent', websiteContentSchema);
 
 // Function to insert a document
-async function insert(url, html, h1, keywords, mostUsedWords) {
+export async function insert(url, html, h1, keywords, mostUsedWords) {
     try {
         const websiteContent = new WebsiteContent({
             url: url,
@@ -41,13 +41,11 @@ async function insert(url, html, h1, keywords, mostUsedWords) {
         console.log('Inserted document =>', result);
     } catch (err) {
         console.error('Error inserting document', err);
-    } finally {
-        mongoose.connection.close();
     }
 }
 
 // Function to find all documents by URL, title, or most used words
-async function findAll(param, category = null) {
+export async function findAll(param, category = null) {
     if (param.length > 2) {
         try {
             let documents = null;
@@ -73,15 +71,15 @@ async function findAll(param, category = null) {
             }
             console.log('Documents found:', documents);
             return documents;
-        } finally {
-            mongoose.connection.close();
+        } catch (err) {
+            console.error('Error finding document', err);
         }
     }
 }
 
 
 // Function to find all documents by URL, title, or most used words
-async function findAllHtml(param, category = null, excludeIds = []) {
+export async function findAllHtml(param, category = null, excludeIds = []) {
     if (param.length > 2) {
         try {
             let documents = null;
@@ -100,8 +98,8 @@ async function findAllHtml(param, category = null, excludeIds = []) {
             }
             console.log('Documents found:', documents);
             return documents;
-        } finally {
-            mongoose.connection.close();
+        } catch (err) {
+            console.error('Error finding all document', err);
         }
     }
 }
@@ -117,5 +115,3 @@ function setCategory(url) {
     console.log(category);
     return category;
 }
-
-module.exports = { insert, findAll, findAllHtml };
