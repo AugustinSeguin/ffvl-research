@@ -56,51 +56,6 @@ async function collectAllLinks(page) {
 
 // function that fetches all the data from de ffvl websites
 export async function getAllData() {
-
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-    
-  const visitedLinks = new Set();
-  const linksToVisit = new Set();
-    
-  await page.goto('https://federation.ffvl.fr', { waitUntil: 'load' });
-  
-  const initialInfo = await extractPageInfo(page);
-  visitedLinks.add(initialInfo);
-
-  let newLinks = await collectAllLinks(page);
-  newLinks.forEach(link => linksToVisit.add(link));
-
-  while (linksToVisit.size > 0) {
-    const [nextLink] = linksToVisit;
-    linksToVisit.delete(nextLink);
-  
-    if (visitedLinks.has(nextLink)) continue;
-      
-    try {
-      await page.goto(nextLink, { waitUntil: 'load', timeout: 30000 });
-
-      newLinks = await collectAllLinks(page);
-
-      const pageInfo = await extractPageInfo(page);
-      visitedLinks.add(pageInfo);
-
-      newLinks.forEach(link => {
-        if (!visitedLinks.has(link) && !linksToVisit.has(link)) {
-          linksToVisit.add(link);
-        }
-      });
-    } catch (error) {
-      console.log(`Failed to load ${nextLink}: ${error.message}`);
-    }
-  }
-    
-  await browser.close();
-
-  return visitedLinks;
-}
-
-export async function main() {
   const browser = await puppeteer.launch({
     executablePath: '/usr/bin/google-chrome-stable', // Specify the path to your Chrome binary
     headless: true, // Set to false if you want to see the browser UI

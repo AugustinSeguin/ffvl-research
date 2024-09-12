@@ -7,9 +7,13 @@ const url = 'mongodb://mongodb:27017/ffvlDb';
 const dbName = 'ffvlDb';
 
 // Connect to MongoDB
-mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(err => console.error('Could not connect to MongoDB', err));
+(async function () {
+    let client = mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+        .then(() => console.log('Connected to MongoDB'))
+        .catch(err => console.error('Could not connect to MongoDB', err));
+    const { db } = mongoose.connection;
+    return { client, db };
+})();
 
 // Define a schema
 const websiteContentSchema = new mongoose.Schema({
@@ -44,86 +48,53 @@ async function insert(url, html, h1, keywords, mostUsedWords) {
     }
 }
 
-async function findAllByTitle(collectionName, param = {}) {
-    const { client, db } = await connect();
-    try {
-        const collection = db.collection(collectionName);
-        const documents = await collection.find({ "h1": '/' + param + '/' }).toArray();
-        console.log('Documents found:', documents);
-        return documents;
-    } finally {
-        await client.close();
-    }
-}
-
-async function findAllByUrl(collectionName, param = {}) {
-    const { client, db } = await connect();
-    try {
-        const collection = db.collection(collectionName);
-        const documents = await collection.find({ "url": '/' + param + '/' }).toArray();
-        console.log('Documents found:', documents);
-        return documents;
-    } finally {
-        await client.close();
-    }
-}
-
-async function findAllByKeywords(collectionName, param = {}) {
-    const { client, db } = await connect();
-    try {
-        const collection = db.collection(collectionName);
-        const documents = await collection.find({ "keywords": '/' + param + '/' }).toArray();
-        console.log('Documents found:', documents);
-        return documents;
-    } finally {
-        await client.close();
-    }
-}
-
-async function findAllByMostUsedWords(collectionName, param = {}) {
-    const { client, db } = await connect();
-    try {
-        const collection = db.collection(collectionName);
-        const documents = await collection.find({ "mostUsedWords": '/' + param + '/' }).toArray();
-        console.log('Documents found:', documents);
-        return documents;
-    } finally {
-        await client.close();
-    }
-}
-
-async function findAllByHtml(collectionName, param = {}) {
-    const { client, db } = await connect();
-    try {
-        const regex = new RegExp(/^${param}^/, 'i'); // 'i' pour insensible à la casse
-        const query = { ["html"]: regex } ;
-        const collection = db.collection(collectionName);
-        const documents = await collection.find({ "html" :  new Regex(param) } ).toArray();
-        console.log('Documents found:', documents);
-        return documents;
-    } finally {
-        await client.close();
+// Function to find all documents by URL, title, or most used words
+async function findAll(param, category = null) {
+    if (param.length > 2) {
+        try {
+            const documents = await WebsiteContent.find({
+                $or: [
+                    { url: { $regex: '.*' + param + '.*', $options: 'i' }, category: category },
+                    { h1: { $regex: '.*' + param + '.*', $options: 'i' }, category: category },
+                    { mostUsedWords: { $elemMatch: { $regex: '.*' + param + '.*', $options: 'i' } }, category: category },
+                    { keywords: { $elemMatch: { $regex: '.*' + param + '.*', $options: 'i' } }, category: category }
+                ]
+            });
+            console.log('Documents found:', documents);
+            return documents;
+        } finally {
+            mongoose.connection.close();
+        }
     }
 }
 
 
-async function findAll(collectionName, query = {}) {
-    const { client, db } = await connect();
-    try {
-        const collection = db.collection(collectionName);
-        const documents = await collection.find(query).toArray();
-        console.log('Documents found:', documents);
-        return documents;
-    } finally {
-        await client.close();
+// Function to find all documents by URL, title, or most used words
+async function findAllHtml(param, category = null, excludeIds = []) {
+    if (param.length > 2) {
+        try {
+            const documents = await WebsiteContent.find({
+                html: { $regex: '.*' + param + '.*', $options: 'i' },
+                category: category,
+                _id: { $nin: excludeIds }
+            });
+            console.log('Documents found:', documents);
+            return documents;
+        } finally {
+            mongoose.connection.close();
+        }
     }
 }
+
 
 function setCategory(url) {
     const categories = ["federation", "delta", "parapente", "cv", "kite", "boomerang"];
 
-    return categories.find((category) => url.includes(category));
-
+    let category = categories.find((category) => url.includes(category));
+    if (category === undefined) {
+        category = "Tous les sports";
+    }
+    return category;
 }
 
-module.exports = { insert, findAll, findAllByHtml, findAllByKeywords, findAllByMostUsedWords, findAllByTitle, findAllByUrl, setCategory };
+module.exports = { insert, findAll };
