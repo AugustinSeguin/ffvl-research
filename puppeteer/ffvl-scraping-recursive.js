@@ -35,21 +35,69 @@ async function extractPageInfo(page) {
 }
 
 async function collectAllLinks(page) {
-  return await page.evaluate(() => {
-    const anchors = Array.from(document.querySelectorAll('a'));
-    return anchors
-      .map(anchor => anchor.href)
-      .filter(href => {
-        if (href.includes('ffvl') && (!href.includes('facebook') || !href.includes('twitter') || !href.includes('img'))) {
-          try {
-            const linkUrl = new URL(href);
-            return linkUrl.protocol === 'http:' || linkUrl.protocol === 'https:';
-          } catch (e) {
-            return false;
-          }
+    return await page.evaluate(() => {
+        // Récupération de tous les élements <a> de la page
+        const anchors = Array.from(document.querySelectorAll('a'));
+        return anchors
+          .map(anchor => anchor.href)
+          .filter(href => {
+            // Vérifications sur l'URL pour filtrer celles qui ne sont pas utiles
+            if(href.includes('ffvl') && (!href.includes('facebook') || !href.includes('twitter') || !href.includes('img'))){
+              try{
+                const linkUrl = new URL(href);
+                return linkUrl.protocol === 'http:' || linkUrl.protocol === 'https:';
+              } catch (e){
+                return false;
+              }
+            }
+          })
+      });
+}
+
+// function that fetches all the data from de ffvl websites
+export async function getAllData() {
+
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+    
+  const visitedLinks = new Set();
+  const linksToVisit = new Set();
+    
+  await page.goto('https://federation.ffvl.fr', { waitUntil: 'load' });
+  
+  const initialInfo = await extractPageInfo(page);
+  visitedLinks.add(initialInfo);
+
+  let newLinks = await collectAllLinks(page);
+  newLinks.forEach(link => linksToVisit.add(link));
+
+  while (linksToVisit.size > 0) {
+    const [nextLink] = linksToVisit;
+    linksToVisit.delete(nextLink);
+  
+    if (visitedLinks.has(nextLink)) continue;
+      
+    try {
+      await page.goto(nextLink, { waitUntil: 'load', timeout: 30000 });
+
+      newLinks = await collectAllLinks(page);
+
+      const pageInfo = await extractPageInfo(page);
+      visitedLinks.add(pageInfo);
+
+      newLinks.forEach(link => {
+        if (!visitedLinks.has(link) && !linksToVisit.has(link)) {
+          linksToVisit.add(link);
         }
-      })
-  });
+      });
+    } catch (error) {
+      console.log(`Failed to load ${nextLink}: ${error.message}`);
+    }
+  }
+    
+  await browser.close();
+
+  return visitedLinks;
 }
 
 export async function main() {
