@@ -8,11 +8,9 @@ const dbName = 'ffvlDb';
 
 // Connect to MongoDB
 (async function () {
-    let client = mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+    return await mongoose.connect(url)
         .then(() => console.log('Connected to MongoDB'))
         .catch(err => console.error('Could not connect to MongoDB', err));
-    const { db } = mongoose.connection;
-    return { client, db };
 })();
 
 // Define a schema
@@ -52,14 +50,27 @@ async function insert(url, html, h1, keywords, mostUsedWords) {
 async function findAll(param, category = null) {
     if (param.length > 2) {
         try {
-            const documents = await WebsiteContent.find({
-                $or: [
-                    { url: { $regex: '.*' + param + '.*', $options: 'i' }, category: category },
-                    { h1: { $regex: '.*' + param + '.*', $options: 'i' }, category: category },
-                    { mostUsedWords: { $elemMatch: { $regex: '.*' + param + '.*', $options: 'i' } }, category: category },
-                    { keywords: { $elemMatch: { $regex: '.*' + param + '.*', $options: 'i' } }, category: category }
-                ]
-            });
+            let documents = null;
+            if (category === null) {
+                documents = await WebsiteContent.find({
+                    $or: [
+                        { url: { $regex: '.*' + param + '.*', $options: 'i' } },
+                        { h1: { $regex: '.*' + param + '.*', $options: 'i' } },
+                        { mostUsedWords: { $elemMatch: { $regex: '.*' + param + '.*', $options: 'i' } } },
+                        { keywords: { $elemMatch: { $regex: '.*' + param + '.*', $options: 'i' } } }
+                    ]
+                });
+            }
+            else {
+                documents = await WebsiteContent.find({
+                    $or: [
+                        { url: { $regex: '.*' + param + '.*', $options: 'i' }, category: category },
+                        { h1: { $regex: '.*' + param + '.*', $options: 'i' }, category: category },
+                        { mostUsedWords: { $elemMatch: { $regex: '.*' + param + '.*', $options: 'i' } }, category: category },
+                        { keywords: { $elemMatch: { $regex: '.*' + param + '.*', $options: 'i' } }, category: category }
+                    ]
+                });
+            }
             console.log('Documents found:', documents);
             return documents;
         } finally {
@@ -73,11 +84,20 @@ async function findAll(param, category = null) {
 async function findAllHtml(param, category = null, excludeIds = []) {
     if (param.length > 2) {
         try {
-            const documents = await WebsiteContent.find({
-                html: { $regex: '.*' + param + '.*', $options: 'i' },
-                category: category,
-                _id: { $nin: excludeIds }
-            });
+            let documents = null;
+            if (category === null) {
+                documents = await WebsiteContent.find({
+                    html: { $regex: '.*' + param + '.*', $options: 'i' },
+                    category: category,
+                    _id: { $nin: excludeIds }
+                });
+            }
+            else {
+                documents = await WebsiteContent.find({
+                    html: { $regex: '.*' + param + '.*', $options: 'i' },
+                    _id: { $nin: excludeIds }
+                });
+            }
             console.log('Documents found:', documents);
             return documents;
         } finally {
@@ -94,7 +114,8 @@ function setCategory(url) {
     if (category === undefined) {
         category = "Tous les sports";
     }
+    console.log(category);
     return category;
 }
 
-module.exports = { insert, findAll };
+module.exports = { insert, findAll, findAllHtml };
