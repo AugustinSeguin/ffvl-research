@@ -17,6 +17,9 @@ RUN apt-get update && apt-get install -y \
     libatspi2.0-0 \
     libgtk-3-0 \
     libxshmfence1 \
+    fonts-liberation \
+    libvulkan1 \
+    xdg-utils \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
@@ -39,3 +42,4 @@ COPY . .
 # Expose the port the app runs on
 EXPOSE 3000
 
+CMD npm start
