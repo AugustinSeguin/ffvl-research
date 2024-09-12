@@ -9,10 +9,10 @@ const resArray = [...res];
 
 resArray.forEach(element => {
     const obj = JSON.parse(JSON.stringify(element));
-    try{
+    try {
         insert(obj.url, obj.html, obj.h1, obj.keywords, obj.mostUsedWords);
-    } catch(e){
-        console.log('Could not insert: '+ e)
+    } catch (e) {
+        console.log('Could not insert: ' + e)
     }
 });
 
@@ -27,17 +27,17 @@ async function secondaryResults(results, param, category) {
     }
 }
 
-
 app.get('/search', (req, res) => {
     let param = req.params['keyword'];
     let category = req.params['category'];
 
     let results = prioriotaryResults(param, category);
     if (req.params['needMoreResulst']) {
-       results = secondaryResults(results, param, category);
+        results = secondaryResults(results, param, category);
     }
     res.send(results);
 })
 
 const port = 3000;
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
