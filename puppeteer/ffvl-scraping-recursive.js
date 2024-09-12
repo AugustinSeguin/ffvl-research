@@ -57,7 +57,7 @@ async function collectAllLinks(page) {
 // function that fetches all the data from de ffvl websites
 export async function getAllData() {
   const browser = await puppeteer.launch({
-    //executablePath: '/usr/bin/google-chrome-stable', // Specify the path to your Chrome binary
+    executablePath: '/usr/bin/google-chrome-stable', // Specify the path to your Chrome binary
     headless: true, // Set to false if you want to see the browser UI
     args: ['--no-sandbox', '--disable-setuid-sandbox'], // Add these flags
   });
