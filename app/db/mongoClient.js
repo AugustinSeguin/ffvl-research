@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 // Connection URL
-const url = 'mongodb://localhost:27017/ffvlDb';
+const url = 'mongodb://mongodb:27017/ffvlDb';
 
 // Database Name
 const dbName = 'ffvlDb';
@@ -20,7 +20,8 @@ const websiteContentSchema = new mongoose.Schema({
     h1: String,
     keywords: [String],
     mostUsedWords: [String],
-    category: String
+    category: String,
+    isDocumentValid: Boolean
 });
 
 // Create a model
@@ -35,7 +36,8 @@ export async function insert(url, html, h1, keywords, mostUsedWords) {
             h1: h1,
             keywords: keywords,
             mostUsedWords: mostUsedWords,
-            category: setCategory(url)
+            category: setCategory(url),
+            isDocumentValid: isDocumentValid
         });
         const result = await websiteContent.save();
         console.log('Inserted document =>', result);

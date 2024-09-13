@@ -7,15 +7,6 @@ Voici un POC de la fonctionnalité recherche sur tous les sites de la FFVL.
 - Lancer la commande pour créer les containers :
 `docker-compose up -d`
 
-- Entrer dans le container npm
-`docker exec -it npm bash`
-
-- Installer les dépendances
-`npm i`
-
-- Exécuter le programme
-`npm run start`
-
 ### Container npm
 
 Environnement NodeJs 
